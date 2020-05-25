@@ -70,9 +70,13 @@ data %>% plot_missing()
 
 library(openxlsx)
 data %>% openxlsx::write.xlsx(file = here("input/process_data.xlsx"))
+
+
 # manual edit
 data <- read_excel("input/process_data.xlsx") %>% 
-  mutate(hb = as.integer(hb), hb = ifelse(is.na(hb),median(hb,na.rm = TRUE),.)) 
+  mutate(hb = as.integer(hb)) %>% 
+  mutate_if(is.numeric, list(~ replace(., is.na(.), median(., na.rm = TRUE)))) %>% 
+  select(-c(akrinor_ja_1_nein_0,atropin_ja_1_nein_0))
 
 
 corr_RF <- function(df, iter) {
