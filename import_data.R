@@ -96,7 +96,7 @@ corr_RF <- function(df, iter) {
       )
     )
   # use calibration1 and calibration2 to give a high value of correlation to scale upon, this is not performed in the boruta loop
-  df <- dplyr::mutate(df, calibration1 = 1, calibration2 = 1)
+  df <- dplyr::mutate(df, calibration1 = 1, calibration2 = 1, calibration3 = runif(nrow(df),min = 0, max = 1), calibration4 = runif(nrow(df),min = 0, max = 1))
   # Boruta specific
   df <- df %>% 
     names() %>% 
@@ -112,6 +112,7 @@ corr_RF <- function(df, iter) {
           maxRuns = iter
         )
       ) %>% 
+        TentativeRoughFix() %>% 
         rownames_to_column() %>% 
         mutate(Score = ifelse(decision == "Rejected", 0, medianImp * normHits)) %>%
         dplyr::select(rowname, Score) %>% 
@@ -126,8 +127,8 @@ corr_RF <- function(df, iter) {
       value =  as.integer(100*value/max(value, na.rm = TRUE)), 
       ident = case_when(
         target == feature ~ "x",
-        target %in% c("calibration1","calibration2") ~ "x", # remove the calibration columns
-        feature %in% c("calibration1","calibration2") ~ "x",
+        target %in% c("calibration1","calibration2","calibration3","calibration4") ~ "x", # remove the calibration columns
+        feature %in%  c("calibration1","calibration2","calibration3","calibration4") ~ "x",
         TRUE ~ "v" # preserve the rest
       )
     ) %>%
